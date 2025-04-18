@@ -10,6 +10,8 @@ from bson import ObjectId
 from models import ScanRequest, ScanResponse
 from scanner import VulnerabilityScanner
 
+from datetime import datetime
+
 # Thiết lập logging
 logger = logging.getLogger(__name__)
 
@@ -99,7 +101,7 @@ async def get_reports(client: MongoClient = Depends(get_mongo_client)):
         cursor = collection.find({}, {
             "scan_info": 1, 
             "open_ports": 1,
-            "vulnerabilities": {"$slice": 5}  # Lấy tối đa 5 lỗ hổng cho preview
+            "vulnerabilities": {"$slice": 125}  # Lấy tối đa 5 lỗ hổng cho preview
         }).sort("scan_info.timestamp", -1).limit(100)
         
         for doc in cursor:

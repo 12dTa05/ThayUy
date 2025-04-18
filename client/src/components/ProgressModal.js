@@ -70,7 +70,7 @@ const ProgressModal = ({ open, target, reportId, onClose }) => {
           }, 1200);
         }
       }
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [open, reportId, onClose]);
