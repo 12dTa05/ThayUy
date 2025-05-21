@@ -4,5 +4,5 @@ client/package-lock.json
 server/vulnerability_scanner.log
 server/__pycache__
 
-__pycache__
-server.py
+./__pycache__
+./server.py
