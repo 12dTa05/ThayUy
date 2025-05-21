@@ -34,7 +34,6 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from bson import ObjectId
 
-# Thiết lập logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -45,13 +44,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="Vulnerability Scanner API",
-    description="API quét lỗ hổng bảo mật cho các mục tiêu web và máy chủ",
-    version="1.0.0"
-)
+app = FastAPI()
 
-# Thêm CORS middleware
+#CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -60,19 +55,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Model cho request input
+#request input
 class ScanRequest(BaseModel):
     target: str = Field(..., description="URL hoặc địa chỉ IP của mục tiêu")
-    ports: Optional[str] = Field("1-1000", description="Danh sách các cổng cần quét (mặc định '1-1000')")
+    ports: Optional[str] = Field("", description="Danh sách các cổng cần quét (mặc định '1-1000')")
     output_format: Optional[str] = Field("json", description="Định dạng đầu ra (json)")
 
-# Model cho response
+#response
 class ScanResponse(BaseModel):
     status: str
     report_id: Optional[str] = None
     message: Optional[str] = None
 
-# Model cho lỗ hổng
+#lỗ hổng
 class Vulnerability(BaseModel):
     id: str
     service: str
@@ -84,9 +79,9 @@ class Vulnerability(BaseModel):
     cvss_vector: Optional[str] = None
     published: Optional[str] = None
 
-# Lớp Session với retry
+#Session với retry
 class RequestsWithRetry:
-    def __init__(self, retries=3, backoff_factor=0.3, status_forcelist=(500, 502, 504)):
+    def __init__(self, retries=1, backoff_factor=0.3, status_forcelist=(500, 502, 504)):
         self.session = requests.Session()
         retry = Retry(
             total=retries,
@@ -108,15 +103,10 @@ class RequestsWithRetry:
     def close(self):
         self.session.close()
 
-# Lớp tính toán CVSS 3.1
+#CVSS
 class CVSSCalculator:
-    """
-    Lớp tính toán điểm CVSS 3.1 dựa trên các thông số của lỗ hổng
-    """
     def __init__(self):
-        # Khởi tạo các giá trị mặc định
         self.metrics = {
-            # Base Metrics
             'AV': 'N',  # Attack Vector (Network)
             'AC': 'L',  # Attack Complexity (Low)
             'PR': 'N',  # Privileges Required (None)
@@ -127,7 +117,6 @@ class CVSSCalculator:
             'A': 'N',   # Availability Impact (None)
         }
         
-        # Giá trị của mỗi tham số
         self.weights = {
             # Attack Vector
             'AV': {'N': 0.85, 'A': 0.62, 'L': 0.55, 'P': 0.2},
@@ -150,14 +139,12 @@ class CVSSCalculator:
         }
 
     def set_metric(self, metric, value):
-        """Thiết lập giá trị cho một tham số CVSS"""
         if metric in self.metrics and value in self._get_valid_values(metric):
             self.metrics[metric] = value
             return True
         return False
     
     def _get_valid_values(self, metric):
-        """Lấy các giá trị hợp lệ cho một tham số"""
         if metric in ['AV', 'AC', 'UI']:
             return self.weights[metric].keys()
         elif metric in ['C', 'I', 'A']:

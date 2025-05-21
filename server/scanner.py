@@ -1261,9 +1261,6 @@ class VulnerabilityScanner:
         if not self.hostname or self.hostname == self.ip_address:
             return
         
-        # Sử dụng khối try/except cho từng phương thức riêng biệt
-        # để một lỗi không làm dừng toàn bộ quá trình kiểm tra
-        
         try:
             self._check_s3_buckets()
         except Exception as e:
@@ -1506,15 +1503,6 @@ class VulnerabilityScanner:
                                 logger.warning(f"S3 bucket {bucket_name} cho phép xem ACL công khai")
                         except Exception as e:
                             logger.debug(f"Lỗi kiểm tra ACL bucket cho {bucket_name}: {str(e)}")
-                            
-                        # Chỉ kiểm tra URL buckets theo định dạng cũ nếu phát hiện được bucket
-                        try:
-                            alternative_url = f"https://{bucket_name}.s3.amazonaws.com"
-                            alt_response = self.requests.get(alternative_url, timeout=10)
-                            if alt_response.status_code == 200:
-                                logger.info(f"Bucket cũng có thể truy cập qua: {alternative_url}")
-                        except Exception as e:
-                            logger.debug(f"Không thể truy cập URL thay thế cho bucket {bucket_name}: {str(e)}")
                 except Exception as e:
                     logger.debug(f"Lỗi kiểm tra S3 bucket {bucket_name}: {str(e)}")
     
