@@ -1,1 +1,7 @@
 client/node_modules
+client/package-lock.json
+
+server/vulnerability_scanner.log
+server/__pycache__
+
+server.py
